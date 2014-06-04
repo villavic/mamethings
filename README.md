@@ -1,4 +1,4 @@
 mamethings
 ==========
 
-Stuff for MAME
+Shaders and configs I use/made for SDLMAME on Linux.
