@@ -1,0 +1,4 @@
+mamethings
+==========
+
+Stuff for MAME
