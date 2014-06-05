@@ -31,22 +31,24 @@ vec2 Offset[KERNEL_SIZE] = {
 
 vec4 lutTex2D(in vec2 texcoord)
 {
-	vec4 color_tex;
-	vec2 color_map_coord;
+	vec2 lutindex;
+    vec2 one = 1.0 / color_texture_pow2_sz;
 
 	// normalized texture coordinates ..
-	color_tex = texture2D(color_texture, texcoord);
+	float incolor = texture2D(color_texture, texcoord).a;
 
 	// GL_UNSIGNED_SHORT GL_ALPHA in ALPHA16 conversion:
 	// general: f = c / ((2*N)-1), c color bitfield, N number of bits
 	// ushort:  c = ((2**16)-1)*f;
-	color_map_coord.x = floor( 65535.0 * color_tex.a + 0.5 );
-
-	// map it to the 2D lut table
-	color_map_coord.y = floor(color_map_coord.x/colortable_sz.x);
-	color_map_coord.x =   mod(color_map_coord.x,colortable_sz.x);
-
-	return texture2D(colortable_texture, color_map_coord/(colortable_pow2_sz-1.0));
+	float index = floor(incolor * 65535) + 1e-6;
+    /* Compute high byte (8 MSBs) of 2D texture lookup position: */
+    lutindex.y = (floor(index / colortable_pow2_sz.x) + 0.5);
+    /* Compute low byte (8 LSBs) of 2D texture lookup position: */
+    lutindex.x = (floor(mod(index, colortable_pow2_sz.x)) + 0.5);
+    /* Readout LUT texture at 2D location lutindex(x,y) to get final RGBA8 */
+    /* output pixel and write it to framebuffer: */
+    lutindex = lutindex * (1.0 + 1e-4);
+    return texture2D(colortable_texture, lutindex / colortable_pow2_sz);
 }
 
 void main()

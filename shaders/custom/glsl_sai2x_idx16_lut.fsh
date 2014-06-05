@@ -11,8 +11,6 @@ uniform vec2      color_texture_pow2_sz; // pow2 tex size
 varying vec2      texCoord_0_pow2_sz; // gl_TexCoord[0].xy*color_texture_pow2_sz
 varying vec2	  color_texture_pow2_inv_sz;	// pow2 tex 1/size 
 
-// #define DO_GAMMA  1 // 'pow' is very slow on old hardware, i.e. pre R600 and 'slow' in general
-
 #define TEX2D(v) lutTex2D((v))
 
 #define GET_RESULT(a,b,c,d) (sign(abs((a)-(c))+abs((a)-(d)))-sign(abs((b)-(c))+abs((b)-(d))))
@@ -24,22 +22,24 @@ const vec4 dt = vec4(16777216.0,65536.0,256.0,1.0);
 
 vec4 lutTex2D(in vec2 texcoord)
 {
-	vec4 color_tex;
-	vec2 color_map_coord;
+	vec2 lutindex;
+    vec2 one = 1.0 / color_texture_pow2_sz;
 
 	// normalized texture coordinates ..
-	color_tex = texture2D(color_texture, texcoord);
+	float incolor = texture2D(color_texture, texcoord).a;
 
 	// GL_UNSIGNED_SHORT GL_ALPHA in ALPHA16 conversion:
 	// general: f = c / ((2*N)-1), c color bitfield, N number of bits
 	// ushort:  c = ((2**16)-1)*f;
-	color_map_coord.x = floor( 65535.0 * color_tex.a + 0.5 );
-
-	// map it to the 2D lut table
-	color_map_coord.y = floor(color_map_coord.x/colortable_sz.x);
-	color_map_coord.x =   mod(color_map_coord.x,colortable_sz.x);
-
-	return texture2D(colortable_texture, color_map_coord/(colortable_pow2_sz-1.0));
+	float index = floor(incolor * 65535) + 1e-6;
+    /* Compute high byte (8 MSBs) of 2D texture lookup position: */
+    lutindex.y = (floor(index / colortable_pow2_sz.x) + 0.5);
+    /* Compute low byte (8 LSBs) of 2D texture lookup position: */
+    lutindex.x = (floor(mod(index, colortable_pow2_sz.x)) + 0.5);
+    /* Readout LUT texture at 2D location lutindex(x,y) to get final RGBA8 */
+    /* output pixel and write it to framebuffer: */
+    lutindex = lutindex * (1.0 + 1e-4);
+    return texture2D(colortable_texture, lutindex / colortable_pow2_sz);
 }
 
 
