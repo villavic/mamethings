@@ -1,5 +1,5 @@
-#pragma optimize (off)
-#pragma debug (on)
+#pragma optimize (on)
+#pragma debug (off)
 
 uniform sampler2D colortable_texture;    // LUT texture
 uniform sampler2D color_texture;         // mame idx'ed texture

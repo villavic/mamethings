@@ -1,5 +1,5 @@
-#pragma optimize (off)
-#pragma debug (on)
+#pragma optimize (on)
+#pragma debug (off)
 
 uniform sampler2D colortable_texture;    // LUT texture
 uniform sampler2D color_texture;         // mame idx'ed texture
@@ -9,9 +9,8 @@ uniform vec2      color_texture_sz;      // textured size
 uniform vec2      color_texture_pow2_sz; // textured pow2 size
 
 varying vec2        color_texture_pow2_inv_sz;  // pow2 tex 1/size 
-varying vec2        texCoord_0_pow2_sz;     // gl_TexCoord[0].xy*color_texture_pow2_sz
 
-/* Change this define to one of:
+/* Change this #define to one of:
  *  Triangular, BellFunc, BSpline, CatMullRom
  */
 
